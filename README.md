@@ -1,5 +1,7 @@
 # Unofficial Clojure Poloniex API wrapper
 
+[![Build Status](https://travis-ci.org/adambober/clojure-poloniex.svg?branch=master)](https://travis-ci.org/adambober/clojure-poloniex)
+
 ## Motivation
 
 I wanted to create this wrapper because I enjoy programming in Clojure.
