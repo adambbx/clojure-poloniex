@@ -21,12 +21,18 @@ Add this to your project.clj:
 ```
 
 Simply require an API (public, trading, push)
-For methods with parameters use, e.g. :params {:currency-pair "BTC_LTC"}
+For methods with parameters use :params {:currency-pair "BTC_LTC"}
 
 For trading methods, it is necessary to add :creds {:key "Your API key" :secret "Your secret key"}
 
 For push methods, it is important to run them as scheduled job for a certain amount of time.
-Supply your own callbacks for the push methods using WampCallback defrecord.
+Supply your own callbacks for the push methods using WampCallback.
+
+```clojure
+;the first argument is for the on-next event
+;the second is for the on-error
+(WampCallback. #(println %) #(println %))
+```
 
 To get order book and trade updates for desired currency pair,
 define an API method, as follows:
@@ -37,6 +43,8 @@ define an API method, as follows:
                         :wsurl *wsurl*
                         :realm *realm*)
 ```
+
+Default callbacks only print the received responses. Just override the callbacks at runtime as needed. See Examples below.
 
 ## Examples
 
@@ -58,8 +66,7 @@ define an API method, as follows:
 ### Push API
 
 ```clojure
-; Using Push API is a bit more complicated;
-; Get data from a Push method you need to schedule running this method for a certain amount of time.
+; Using Push API is a bit more complicated.
 
 (ns poloniex-api.examples.wamp
   (:use
@@ -77,6 +84,7 @@ define an API method, as follows:
         (println "Caught exception: " e))
       (finally (close push-method)))))
 
+; Schedule a push method for a given amount of time to collect data.
 (run :push-method (btc-ltc) :callbacks (WampCallback. #(prn %) #(prn %))
                             :timeout-in-secs 7)
 ```
