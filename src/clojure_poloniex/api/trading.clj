@@ -103,3 +103,12 @@
                                         returns your current trading fees and trailing 30-day volume in BTC.
                                         This information is updated once every 24 hours.
                                         You need to supply :creds with :key and :secret\"")
+
+(define-trading-poloniex-method "buy" :post
+  :doc "Places a limit buy order in a given market. Required POST parameters are \"currencyPair\", \"rate\", and \"amount\". If successful, the method will return the order number.")
+
+(define-trading-poloniex-method "sell" :post
+  :doc "Places a sell order in a given market. Required POST parameters are \"currencyPair\", \"rate\", and \"amount\". If successful, the method will return the order number.")
+
+(define-trading-poloniex-method "cancel-order" :post
+  :doc "Cancels an order you have placed in a given market. Required POST parameter is \"orderNumber\".")
