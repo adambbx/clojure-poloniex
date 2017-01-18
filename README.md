@@ -19,7 +19,7 @@ Besides, I wanted to:
 Add this to your project.clj:
 
 ```
-[poloniex-api-wrapper "0.0.1"]
+[clojure-poloniex "0.1.0-SNAPSHOT"]
 ```
 
 Simply require an API (public, trading, push)
