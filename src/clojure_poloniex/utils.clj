@@ -27,3 +27,8 @@
 
 (defn capitalize-coll-items [coll]
   (map #(str/capitalize %1) coll))
+
+(defn join-currencies [currencyA currencyB]
+  (if (not (string? currencyB))
+    currencyA
+    (str currencyA "_" currencyB)))
