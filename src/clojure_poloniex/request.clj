@@ -22,11 +22,23 @@
         rest-tokens (rest tokens)]
     (str/join "" (cons first-token (capitalize-coll-items rest-tokens)))))
 
-(defn prepare-api-params [{:keys [params creds command]}]
-  (let [processed-command (get-api-method-name command)
-        processed-api-params (merge {:command processed-command} (transform-map to-camelcase params))
+(defn format-currency-pair [currency-pair]
+  (str/join "_" (take 2 (flatten [currency-pair]))))
+
+(defn get-currency-pair [{:keys [currency-pair]}]
+  (when currency-pair
+    (hash-map :currency-pair (format-currency-pair currency-pair))))
+
+(defn get-api-params [{:keys [command params]}]
+  (let [api-method (get-api-method-name command)
+        currency-pair-as-map (get-currency-pair params)
+        api-params (merge params currency-pair-as-map {:command api-method})]
+    (transform-map to-camelcase api-params)))
+
+(defn prepare-api-params [{:keys [params creds command] :as arg-map}]
+  (let [api-params (get-api-params arg-map)
         nonce-map (when (not-empty creds) {:nonce (get-nonce-if-creds-are-provided)})]
-    (merge processed-api-params nonce-map)))
+    (merge api-params nonce-map)))
 
 (defn encode-api-param [[k v]]
   (let [key (name k)
@@ -59,10 +71,10 @@
     (when (not-empty merged-headers)
       (hash-map :headers merged-headers))))
 
-(defn prepare-parameters [http-method api-params arg-map]
+(defn get-query-or-body [http-method api-params arg-map]
   (let [params-type (get-params-type http-method)
-        parameters (merge api-params (get arg-map params-type))]
-    (when (not-empty parameters) (hash-map params-type parameters))))
+        query-or-body (merge api-params (get arg-map params-type))]
+    (when (not-empty query-or-body) (hash-map params-type query-or-body))))
 
 (defn prepare-http-options [arg-map]
   (select-keys arg-map [:cookies :proxy :auth :timeout]))
@@ -70,9 +82,9 @@
 (defn get-request-params [http-method & [arg-map]]
   (let [api-params (prepare-api-params arg-map)
         headers (prepare-headers api-params arg-map)
-        parameters (prepare-parameters http-method api-params arg-map)
+        query-or-body (get-query-or-body http-method api-params arg-map)
         http-options (prepare-http-options arg-map)]
-    (merge parameters headers http-options)))
+    (merge query-or-body headers http-options)))
 
 (defn get-request [url http-method arg-map]
   (let [request-params (get-request-params http-method arg-map)

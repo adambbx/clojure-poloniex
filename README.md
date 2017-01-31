@@ -23,7 +23,7 @@ Add this to your project.clj:
 ```
 
 Simply require an API (public, trading, push)
-For methods with parameters use :params {:currency-pair "BTC_LTC"}
+For methods with parameters use :params {:currency-pair ["BTC" "LTC"]}
 
 For trading methods, it is necessary to add :creds {:key "Your API key" :secret "Your secret key"}
 
@@ -32,21 +32,21 @@ Supply your own callbacks for the push methods using WampCallback.
 
 ```clojure
 ;the first argument is for the on-next event
-;the second is for the on-error
+;the second one is for the on-error
 (WampCallback. #(println %) #(println %))
 ```
 
-To get order book and trade updates for desired currency pair,
-define an API method, as follows:
+To get order book and trade updates for desired currency pair, define an API method.
+Default callbacks only print the received responses. Provide your own callbacks by passing :callbacks argument:
 
 ```clojure
 (define-push-api-method "btc-xmr"
                         :scheduler (Schedulers/computation)
+                        :callbacks (WampCallback. #(println %) #(println %))
                         :wsurl *wsurl*
                         :realm *realm*)
 ```
 
-Default callbacks only print the received responses. Just override the callbacks at runtime as needed. See Examples below.
 
 ## Examples
 
@@ -87,8 +87,10 @@ Default callbacks only print the received responses. Just override the callbacks
       (finally (close push-method)))))
 
 ; Schedule a push method for a given amount of time to collect data.
-(run :push-method (btc-ltc) :callbacks (WampCallback. #(prn %) #(prn %))
-                            :timeout-in-secs 7)
+(run :push-method (btc-ltc) :timeout-in-secs 7)
+
+; Schedule
+(run :push-method (btc-ltc :callbacks (WampCallback. #(println %) #(println %))) :timeout-in-secs 7)
 ```
 
 ## Test

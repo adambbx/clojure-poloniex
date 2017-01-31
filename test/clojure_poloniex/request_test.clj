@@ -25,6 +25,24 @@
 (deftest test-get-nonce-if-creds-are-provided
   (is (integer? (get-nonce-if-creds-are-provided))))
 
+(deftest test-get-currency-pair
+  (is (= {:currency-pair "all"} (get-currency-pair {:currency-pair "all"})))
+  (is (= {:currency-pair "BTC_LTC"} (get-currency-pair {:currency-pair ["BTC" "LTC"]})))
+  )
+
+(deftest test-get-api-params
+  (is (= {:currencyPair "BTC_XMR"
+          :amount       300
+          :command      "returnTicker"}
+         (get-api-params {:params  {:currency-pair ["BTC" "XMR"]
+                                    :amount        300}
+                          :command "return-ticker"})))
+  (is (= {:currency "BTC"
+          :command  "returnTicker"}
+         (get-api-params {:params  {:currency "BTC"}
+                          :command "return-ticker"}))))
+
+
 (deftest test-prepare-api-params
   (is (= {:currencyPair "BTC_XMR"
           :command      "returnTicker"}
@@ -73,27 +91,6 @@
 (deftest test-get-client
   (is (= (instance? AsyncHttpClient (get-client)))))
 
-(deftest test-get-request
-  (testing "Testing GET request"
-    (let [request (get-request "https://poloniex.com"
-                               :get
-                               {:params  {:currency-pair "BTC_ETC"}
-                                :command "return-ticker"})]
-      (is (instance? RequestBuilderBase$RequestImpl request))
-      (is (= "https://poloniex.com?command=returnTicker&currencyPair=BTC_ETC" (.getUrl request)))))
-  (testing "Testing POST request"
-    (let [request (get-request "https://poloniex.com"
-                               :post
-                               {:params  {:currency-pair "BTC_ETC"}
-                                :command "return-ticker"})
-          form-params (.getFormParams request)]
-      (is (instance? RequestBuilderBase$RequestImpl request))
-      (is (= "https://poloniex.com" (.getUrl request)))
-      (is (= 2 (count form-params)))
-      (is (= "command" (.getName (nth form-params 0))))
-      (is (= "returnTicker" (.getValue (nth form-params 0))))
-      (is (= "currencyPair" (.getName (nth form-params 1))))
-      (is (= "BTC_ETC" (.getValue (nth form-params 1)))))))
 
 (deftest test-get-callbacks
   (let [test-callback #(println "test")
@@ -109,7 +106,7 @@
                     :command      "returnTicker"}}
            (get-request-params
              :get
-             {:params  {:currency-pair "BTC_ETC"}
+             {:params  {:currency-pair ["BTC" "XMR"]}
               :command "return-ticker"
               :query   {:some-param "test-value" :currencyPair "BTC_XMR"}}))))
   (testing "Testing preparing and merging api params with query"
@@ -162,3 +159,25 @@
               :proxy   {:host "test-proxy" :protocol "https"}
               :auth    {:type :digest :user "test-user" :password "test-password"}
               :timeout 100})))))
+
+(deftest test-get-request
+  (testing "Testing GET request"
+    (let [request (get-request "https://poloniex.com"
+                               :get
+                               {:params  {:currency-pair ["BTC" "ETC"]}
+                                :command "return-ticker"})]
+      (is (instance? RequestBuilderBase$RequestImpl request))
+      (is (= "https://poloniex.com?currencyPair=BTC_ETC&command=returnTicker" (.getUrl request)))))
+  (testing "Testing POST request"
+    (let [request (get-request "https://poloniex.com"
+                               :post
+                               {:params  {:currency-pair ["BTC" "ETC"]}
+                                :command "return-ticker"})
+          form-params (.getFormParams request)]
+      (is (instance? RequestBuilderBase$RequestImpl request))
+      (is (= "https://poloniex.com" (.getUrl request)))
+      (is (= 2 (count form-params)))
+      (is (= "currencyPair" (.getName (nth form-params 0))))
+      (is (= "BTC_ETC" (.getValue (nth form-params 0))))
+      (is (= "command" (.getName (nth form-params 1))))
+      (is (= "returnTicker" (.getValue (nth form-params 1)))))))
