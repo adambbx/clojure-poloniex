@@ -1,15 +1,7 @@
 (ns clojure-poloniex.examples.wamp
   (:use
-    [clojure-poloniex.callbacks]
-    [clojure-poloniex.ws-client])
-  (:import (java.util.concurrent Executors TimeUnit)))
+    [clojure-poloniex.api.push]))
 
-(defn run [& {:keys [push-method timeout-in-secs]}]
-  (let [executor (Executors/newSingleThreadExecutor)]
-    (try
-      (open push-method)
-      (.awaitTermination executor timeout-in-secs (TimeUnit/SECONDS))
-      (close push-method)
-      (catch Exception e
-        (println "Caught exception: " e))
-      (finally (close push-method)))))
+; run a trollbox method for a 10 seconds
+(with-open [push-method (trollbox)]
+  (Thread/sleep 10000))

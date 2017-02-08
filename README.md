@@ -22,7 +22,7 @@ Add this to your project.clj:
 [clojure-poloniex "0.1.0-SNAPSHOT"]
 ```
 
-Simply require an API (public, trading, push)
+Simply require an API namespace (public, trading, push)
 For methods with parameters use :params {:currency-pair ["BTC" "LTC"]}
 
 For trading methods, it is necessary to add :creds {:key "Your API key" :secret "Your secret key"}
@@ -37,14 +37,13 @@ Supply your own callbacks for the push methods using WampCallback.
 ```
 
 To get order book and trade updates for desired currency pair, define an API method.
-Default callbacks only print the received responses. Provide your own callbacks by passing :callbacks argument:
+Default callbacks only print the received responses.
 
 ```clojure
-(define-push-api-method "btc-xmr"
-                        :scheduler (Schedulers/computation)
-                        :callbacks (WampCallback. #(println %) #(println %))
-                        :wsurl *wsurl*
-                        :realm *realm*)
+(define-push-api-method "btc-xmr")
+
+; The url and realm are predefined but can overriden:
+(define-push-api-method "btc-ltc" :wsurl "your url" :realm "your realm")
 ```
 
 
@@ -54,7 +53,7 @@ Default callbacks only print the received responses. Provide your own callbacks 
 ```clojure
 (return-ticker)
 
-(return-chart-data :params {:currency-pair "BTC_LTC" :period 300})
+(return-chart-data :params {:currency-pair ["BTC" "LTC"] :period 300})
 ```
 
 ### Trading API
@@ -62,35 +61,18 @@ Default callbacks only print the received responses. Provide your own callbacks 
 (return-balances :creds {:key "Your API key" :secret "Your API secret"})
 
 (return-open-orders :creds {:key "Your API key" :secret "Your API secret"}
-                    :params {:currencyPair "BTC_LTC"})
+                    :params {:currency-pair ["BTC" "LTC"] })
 ```
 
 ### Push API
 
 ```clojure
-; Using Push API is a bit more complicated.
+; Running a push method infinitely with custom callbacks
+(btc-ltc :callbacks (WampCallback. #(println %) #(println %)))
 
-(ns poloniex-api.examples.wamp
-  (:use
-    [poloniex-api.callbacks]
-    [poloniex-api.ws-client])
-  (:import (java.util.concurrent Executors TimeUnit)))
-
-(defn run [& {:keys [push-method timeout-in-secs]}]
-  (let [executor (Executors/newSingleThreadExecutor)]
-    (try
-      (open push-method)
-      (.awaitTermination executor timeout-in-secs (TimeUnit/SECONDS))
-      (close push-method)
-      (catch Exception e
-        (println "Caught exception: " e))
-      (finally (close push-method)))))
-
-; Schedule a push method for a given amount of time to collect data.
-(run :push-method (btc-ltc) :timeout-in-secs 7)
-
-; Schedule
-(run :push-method (btc-ltc :callbacks (WampCallback. #(println %) #(println %))) :timeout-in-secs 7)
+; Run a push method for a given amount of time with default callbacks.
+(with-open [push-method (trollbox)]
+  (Thread/sleep 10000))
 ```
 
 ## Test

@@ -24,13 +24,16 @@
   Action1
   (call [this throwable] (prn (format "Session ended with error: %s" throwable))))
 
-(defrecord SubscribeAction
-  [callable ws-client feed scheduler callbacks]
+(defrecord CallableAction
+  [callable ws-client arg-map]
   Action1
-  (call [this state]
-    (callable ws-client feed scheduler state callbacks)))
+  (call [this obj]
+    (callable ws-client obj arg-map)))
 
 (defn get-default-callbacks []
   (SyncCallback. get-response
                  throw-error
                  throw-exception))
+
+(defn get-default-wamp-callbacks []
+  (WampCallback. #(println (.arguments %)) #(println %)))
