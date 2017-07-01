@@ -64,6 +64,12 @@
                                 :doc "Returns your open loan offers for each currency.
                                         You need to supply :creds with :key and :secret\"")
 
+(define-trading-poloniex-method "return-lending-history" :post
+                                :doc "Returns your lending history within a time range,
+                                        specified by the \"start\" and \"end\" POST parameter as UNIX timestamps.
+                                        You may specify \"limit\" to limit the number of rows returned.
+                                        You need to supply :creds with :key and :secret\"")
+
 (define-trading-poloniex-method "return-tradable-balances" :post
                                 :doc "Returns your current tradable balances for each currency
                                         in each market for which margin trading is enabled.
