@@ -7,10 +7,10 @@
   (is-response-valid (return-ticker)))
 
 (deftest test-return-order-book
-  (is-response-valid (return-order-book :params {:currency-pair "BTC_HZ"})))
+  (is-response-valid (return-order-book :params {:currency-pair "BTC_LTC"})))
 
 (deftest test-return-trade-history
-  (is-response-valid (return-trade-history :params {:currency-pair "BTC_HZ"})))
+  (is-response-valid (return-trade-history :params {:currency-pair "BTC_LTC"})))
 
 (deftest test-return-chart-data
   (is-response-valid (return-chart-data :params {:currency-pair "BTC_ETC"
