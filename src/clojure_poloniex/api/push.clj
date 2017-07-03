@@ -21,5 +21,3 @@
 (define-push-api-method "trollbox")
 
 (define-push-api-method "ticker")
-
-(define-push-api-method "btc-xmr")
